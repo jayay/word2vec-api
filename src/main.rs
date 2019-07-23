@@ -36,18 +36,18 @@ fn help(routes: State<Vec<Route>>) -> JsonValue {
 }
 
 #[get("/word_count")]
-fn word_count(model: State<WordVector>) -> JsonValue {
-    json!(&model.word_count())
+fn word_count(model: State<&WordVector>) -> JsonValue {
+    json!(model.word_count())
 }
 
 #[get("/vector/<word>")]
-fn vector(model: State<WordVector>, word: String) -> JsonValue {
-    json!(&model.get_vector(&word))
+fn vector(model: State<&WordVector>, word: String) -> JsonValue {
+    json!(model.get_vector(&word))
 }
 
 #[get("/analogy?<pos>&<neg>&<n>")]
-fn analogy(model: State<WordVector>, pos: String, neg: String, n: Option<u32>) -> JsonValue {
-    json!(&model.analogy(
+fn analogy(model: State<&WordVector>, pos: String, neg: String, n: Option<u32>) -> JsonValue {
+    json!(model.analogy(
         pos.split(' ').collect::<Vec<&str>>(),
         neg.split(' ').collect::<Vec<&str>>(),
         match n {
@@ -58,8 +58,8 @@ fn analogy(model: State<WordVector>, pos: String, neg: String, n: Option<u32>) -
 }
 
 #[get("/cosine/<word>?<n>")]
-fn cosine(model: State<WordVector>, word: String, n: Option<u32>) -> JsonValue {
-    json!(&model.cosine(
+fn cosine(model: State<&WordVector>, word: String, n: Option<u32>) -> JsonValue {
+    json!(model.cosine(
         &word,
         match n {
             Some(n) => n as usize,
@@ -70,12 +70,12 @@ fn cosine(model: State<WordVector>, word: String, n: Option<u32>) -> JsonValue {
 
 #[get("/show/me/to/<target>/what/<comparison>/is/to/<origin>")]
 fn analogynice(
-    model: State<WordVector>,
+    model: State<&WordVector>,
     target: String,
     comparison: String,
     origin: String,
 ) -> JsonValue {
-    json!(&model.analogy(vec![&target, &comparison], vec![&origin], 1))
+    json!(model.analogy(vec![&target, &comparison], vec![&origin], 1))
 }
 
 #[catch(404)]
@@ -85,8 +85,10 @@ fn not_found(req: &Request) -> JsonValue {
 
 fn main() {
     eprintln!("Loading model...");
-    let model =
-        WordVector::load_from_binary("model.bin").expect("Unable to load word vector model");
+    let x = Box::new(
+        WordVector::load_from_binary("model.bin").expect("Unable to load word vector model"),
+    );
+    let static_model: &'static WordVector = Box::leak(x);
     eprintln!("Starting server...");
     let ignite = rocket::ignite();
     let routes = routes![
@@ -100,7 +102,7 @@ fn main() {
     ];
     ignite
         .mount("/", routes.clone())
-        .manage(model)
+        .manage(static_model)
         .manage(routes)
         .attach(AdHoc::on_response("Dummy", |_request, response| {
             response.remove_header("Server");
