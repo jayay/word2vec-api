@@ -5,11 +5,28 @@ authors = ["jayay <meine-adresse@live.de>"]
 edition = "2018"
 
 [dependencies]
-word2vec = "0.3.1"
 rocket = "0.4.2"
 
+[dependencies.word2vec]
+version = "0.3.2"
+default-features = false 
+features = ["simd"]
 
 [dependencies.rocket_contrib]
 version = "0.4.2"
 default-features = false
 features = ["json"]
+
+[patch.crates-io]
+word2vec = { git = 'https://github.com/jayay/word2vec', branch = 'simd' }
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+panic = 'unwind'
+incremental = false
+overflow-checks = false
