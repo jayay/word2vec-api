@@ -4,6 +4,11 @@ version = "0.1.0"
 authors = ["jayay <meine-adresse@live.de>"]
 edition = "2018"
 
+[lib]
+name = "word2vec_api_lib"
+path = "src/lib.rs"
+
+
 [dependencies]
 rocket = "0.4.2"
 
@@ -19,6 +24,10 @@ features = ["json"]
 
 [patch.crates-io]
 word2vec = { git = 'https://github.com/jayay/word2vec', branch = 'simd' }
+
+[dev-dependencies]
+serde_json = "1.0.40"
+serde = { version = "1.0", features = ["derive"] }
 
 [profile.release]
 opt-level = 3
