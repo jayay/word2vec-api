@@ -1,9 +1,28 @@
+dist: trusty
 sudo: true
-
+addons:
+    apt:
+        packages:
+            - libcurl4-openssl-dev
+            - libelf-dev
+            - libdw-dev
+            - binutils-dev
+            - libiberty-dev
+            - g++
 language: rust
 before_install:
-  - sudo apt-get install -y kcov
   - cargo install cargo-kcov
+install:
+    - rustc -vV
+    - cargo -vV
+
+    # install kcov
+    - mkdir -p ~/.cargo/bin
+    - sh src/install_kcov.sh
+    - export PATH=$HOME/.local/bin:$HOME/.cargo/bin:$HOME/Library/Python/2.7/bin:$PATH
+    - export RUSTFLAGS="-C link-dead-code"
+    - kcov --version
+
 rust:
   - nightly
 matrix:
