@@ -10,18 +10,24 @@ addons:
             - libiberty-dev
             - g++
 language: rust
+env:
+  - PATH=${PATH}:${HOME}/kcov/bin
 before_install:
+  - wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz
   - cargo install cargo-kcov
 install:
-    - rustc -vV
-    - cargo -vV
-
-    # install kcov
-    - mkdir -p ~/.cargo/bin
-    - sh src/install_kcov.sh
-    - export PATH=$HOME/.local/bin:$HOME/.cargo/bin:$HOME/Library/Python/2.7/bin:$PATH
-    - export RUSTFLAGS="-C link-dead-code"
-    - kcov --version
+  - rustc -vV
+  - cargo -vV
+  - tar xzf master.tar.gz
+  - cd kcov-master
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_INSTALL_PREFIX=${HOME}/kcov ..
+  - make
+  - make install
+  - cd ../..
+  - rm -rf kcov-master
+  - mkdir -p coverage
 
 rust:
   - nightly
