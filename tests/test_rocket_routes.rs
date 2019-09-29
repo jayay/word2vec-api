@@ -180,7 +180,7 @@ mod test {
 
 
     fn get_rocket_client() -> Client {
-        let filename = "model/trained-small.bin";
+        let filename = "tests/model/trained-small.bin";
         let rocket = build_rocket(filename);
         let client = Client::new(rocket).expect("valid rocket instance");
         client

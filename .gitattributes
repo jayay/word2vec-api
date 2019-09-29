@@ -1,1 +1,1 @@
-model/trained-small.bin filter=lfs diff=lfs merge=lfs -text
+tests/model/trained-small.bin filter=lfs diff=lfs merge=lfs -text
