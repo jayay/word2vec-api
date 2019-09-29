@@ -123,11 +123,8 @@ mod test {
         assert_eq!(Some(ContentType::JSON), response.content_type());
         let response_vec = serde_json::from_str::<Vec<Word2VecResult>>(&response.body_string().unwrap()).unwrap();
         assert_eq!(1, response_vec.len());
-
-        let expected_result = vec![
-            Word2VecResult("queen".to_string(), 0.24765503406524658),
-        ];
-        assert_eq!(expected_result, response_vec);
+        assert_eq!("queen".to_string(), response_vec[0].0);
+        assert!((0.24765503406524658 - response_vec[0].1).abs() < 0.00001);
     }
 
     #[test]
@@ -152,7 +149,11 @@ mod test {
             Word2VecResult("aspartame".to_string(), 0.2572169601917267),
             Word2VecResult("dietary".to_string(), 0.2545112371444702),
         ];
-        assert_eq!(expected_result, response_vec);
+
+        for (index, vec_result) in expected_result.iter().enumerate() {
+            assert_eq!(vec_result.0, response_vec[index].0);
+            assert!((vec_result.1 - response_vec[index].1).abs() < 0.0000001);
+        }
     }
 
 
