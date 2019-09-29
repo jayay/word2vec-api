@@ -1,0 +1,15 @@
+sudo: true
+
+language: rust
+before_install:
+  - sudo apt-get install -y kcov
+  - cargo install cargo-kcov
+rust:
+  - nightly
+matrix:
+  fast_finish: true
+cache: cargo
+script:
+  - cargo build
+  - cargo test
+  - cargo kcov --coveralls    
