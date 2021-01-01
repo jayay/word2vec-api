@@ -10,7 +10,7 @@ path = "src/lib.rs"
 
 
 [dependencies]
-rocket = "0.4.5"
+rocket = "^0.4.5"
 
 [dependencies.word2vec]
 version = "0.3.2"
@@ -26,8 +26,8 @@ features = ["json"]
 word2vec = { git = 'https://github.com/jayay/word2vec', branch = 'simd' }
 
 [dev-dependencies]
-serde_json = "1.0.55"
-serde = { version = "1.0", features = ["derive"] }
+serde_json = "^1.0.55"
+serde = { version = "^1.0", features = ["derive"] }
 
 [profile.release]
 opt-level = 3
