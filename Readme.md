@@ -14,3 +14,11 @@ git clone https://github.com/jayay/word2vec-api.git
 cd word2vec-api
 cargo run --release -- path/to/model.bin
 ```
+
+## Running the Container
+
+The binary listens on port 8000, which will have to be forwarded. The first argument to the binary is the path to the model.
+
+```
+docker run -it -v /path/to/model.bin:/data/model.bin -p 8000:8000 ghcr.io/jayay/word2vec-api:master word2vec-api /data/model.bin
+```
