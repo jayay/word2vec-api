@@ -1,25 +1,23 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 #[macro_use]
 extern crate rocket;
-#[macro_use]
-extern crate rocket_contrib;
+
 // only c version of trainer works for this
 extern crate word2vec;
 
-use rocket::fairing::AdHoc;
-use rocket::response::Redirect;
-use rocket::{Request, Route, State, Rocket};
-use rocket_contrib::json::JsonValue;
-use word2vec::wordvectors::WordVector;
 
+use rocket::response::Redirect;
+use rocket::{Request, Route, State, Rocket, Build};
+use word2vec::wordvectors::WordVector;
+use rocket::serde::json::{Value, json};
 
 #[get("/")]
-fn index() -> Redirect {
+async fn index() -> Redirect {
     Redirect::to(uri!(help))
 }
 
 #[get("/help")]
-fn help(routes: State<Vec<Route>>) -> JsonValue {
+fn help(routes: &State<Vec<Route>>) -> Value {
     json!(routes
         .iter()
         .map(|route| {
@@ -37,61 +35,61 @@ fn help(routes: State<Vec<Route>>) -> JsonValue {
 }
 
 #[get("/word_count")]
-fn word_count(model: State<&WordVector>) -> JsonValue {
-    json!(model.word_count())
+async fn word_count(model: &State<&WordVector>) -> Value {
+    json!(model.word_count().await)
 }
 
 #[get("/vector_size")]
-fn vector_size(model: State<&WordVector>) -> JsonValue {
-    json!(model.get_col_count())
+async fn vector_size(model: &State<&WordVector>) -> Value {
+    json!(model.get_col_count().await)
 }
 
 #[get("/vector/<word>")]
-fn vector(model: State<&WordVector>, word: String) -> JsonValue {
-    json!(model.get_vector(&word))
+async fn vector(model: &State<&WordVector>, word: String) -> Value {
+    json!(model.get_vector(&word).await)
 }
 
 #[get("/analogy?<pos>&<neg>&<n>")]
-fn analogy(model: State<&WordVector>, pos: String, neg: String, n: Option<u32>) -> JsonValue {
+async fn analogy(model: &State<&WordVector>, pos: String, neg: String, n: Option<u32>) -> Value {
     json!(model.analogy(
-        pos.split(' ').collect::<Vec<&str>>(),
-        neg.split(' ').collect::<Vec<&str>>(),
+        &pos.split(' ').collect::<Vec<&str>>(),
+        &neg.split(' ').collect::<Vec<&str>>(),
         match n {
             Some(n) => n as usize,
             None => 10,
         }
-    ))
+    ).await)
 }
 
 #[get("/cosine/<word>?<n>")]
-fn cosine(model: State<&WordVector>, word: String, n: Option<u32>) -> JsonValue {
+async fn cosine(model: &State<&WordVector>, word: String, n: Option<u32>) -> Value {
     json!(model.cosine(
         &word,
         match n {
             Some(n) => n as usize,
             None => 10,
         }
-    ))
+    ).await)
 }
 
 #[get("/show/me/to/<target>/what/<comparison>/is/to/<origin>")]
-fn analogynice(
-    model: State<&WordVector>,
+async fn analogynice(
+    model: &State<&WordVector>,
     target: String,
     comparison: String,
     origin: String,
-) -> JsonValue {
-    json!(model.analogy(vec![&target, &comparison], vec![&origin], 1))
+) -> Value {
+    json!(model.analogy(&[&target, &comparison], &[&origin], 1).await)
 }
 
 #[catch(404)]
-fn not_found(req: &Request) -> JsonValue {
+async fn not_found(req: &'_ Request<'_>) -> Value {
     json!(format!("Error 404, '{}' not found. See /help.", req.uri()))
 }
 
-pub fn build_rocket(filename: &str) -> Rocket {
+pub async fn build_rocket(filename: &str) -> Rocket<Build> {
     let static_model: &'static WordVector = Box::leak(Box::new(
-        WordVector::load_from_binary(filename).expect("Unable to load word vector model"),
+        WordVector::load_from_binary(filename).await.expect("Unable to load word vector model"),
     ));
     let routes = routes![
         index,
@@ -103,12 +101,9 @@ pub fn build_rocket(filename: &str) -> Rocket {
         analogynice,
         help,
     ];
-    rocket::ignite()
+    rocket::build()
         .mount("/", routes.clone())
         .manage(static_model)
         .manage(routes)
-        .attach(AdHoc::on_response("Dummy", |_request, response| {
-            response.remove_header("Server");
-        }))
-        .register(catchers![not_found])
+        .register("/", catchers![not_found])
 }
