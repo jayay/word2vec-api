@@ -38,7 +38,7 @@ mod test {
         let mut response = request.dispatch();
         assert_eq!(Status::Ok, response.status());
         assert_eq!(Some(ContentType::JSON), response.content_type());
-        assert_eq!(Some("86589".to_string()), response.body_string());
+        assert_eq!(Some("86588".to_string()), response.body_string());
     }
 
 
