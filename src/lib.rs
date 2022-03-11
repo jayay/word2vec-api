@@ -6,12 +6,12 @@ extern crate rocket_contrib;
 // only c version of trainer works for this
 extern crate word2vec;
 
+use cached::proc_macro::cached;
 use rocket::fairing::AdHoc;
 use rocket::response::Redirect;
-use rocket::{Request, Route, State, Rocket};
+use rocket::{Request, Rocket, Route, State};
 use rocket_contrib::json::JsonValue;
 use word2vec::wordvectors::WordVector;
-
 
 #[get("/")]
 fn index() -> Redirect {
@@ -51,11 +51,14 @@ fn vector(model: State<&WordVector>, word: String) -> JsonValue {
     json!(model.get_vector(&word))
 }
 
-#[get("/analogy?<pos>&<neg>&<n>")]
-fn analogy(model: State<&WordVector>, pos: String, neg: String, n: Option<u32>) -> JsonValue {
-    json!(model.analogy(
-        pos.split(' ').collect::<Vec<&str>>(),
-        neg.split(' ').collect::<Vec<&str>>(),
+#[get("/cosine/<word>?<n>")]
+#[cached(
+    key = "String",
+    convert = r#"{ format!("{}&{}", word, n.unwrap_or(10)) }"#
+)]
+fn cosine(model: State<&WordVector>, word: String, n: Option<u32>) -> JsonValue {
+    json!(model.cosine(
+        &word,
         match n {
             Some(n) => n as usize,
             None => 10,
@@ -63,10 +66,15 @@ fn analogy(model: State<&WordVector>, pos: String, neg: String, n: Option<u32>) 
     ))
 }
 
-#[get("/cosine/<word>?<n>")]
-fn cosine(model: State<&WordVector>, word: String, n: Option<u32>) -> JsonValue {
-    json!(model.cosine(
-        &word,
+#[get("/analogy?<pos>&<neg>&<n>")]
+#[cached(
+    key = "String",
+    convert = r#"{ format!("{}&{}&{}", pos, neg, n.unwrap_or(10)) }"#
+)]
+fn analogy(model: State<&WordVector>, pos: String, neg: String, n: Option<u32>) -> JsonValue {
+    json!(model.analogy(
+        pos.split(' ').collect::<Vec<&str>>(),
+        neg.split(' ').collect::<Vec<&str>>(),
         match n {
             Some(n) => n as usize,
             None => 10,

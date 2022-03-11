@@ -11,6 +11,7 @@ path = "src/lib.rs"
 
 [dependencies]
 rocket = "^0.4.7"
+cached = "0.34.0"
 
 [dependencies.word2vec]
 version = "0.3.2"

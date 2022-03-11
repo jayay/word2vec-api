@@ -1,14 +1,14 @@
 #[cfg(test)]
 mod test {
     extern crate rocket;
-    extern crate word2vec_api_lib;
-    extern crate serde_json;
     extern crate serde;
-    
+    extern crate serde_json;
+    extern crate word2vec_api_lib;
+
+    use rocket::http::{ContentType, Status};
     use rocket::local::Client;
-    use rocket::http::{Status, ContentType};
-    use word2vec_api_lib::*;
     use serde::Deserialize;
+    use word2vec_api_lib::*;
 
     #[test]
     fn test_index() {
@@ -19,7 +19,6 @@ mod test {
         assert_eq!(None, response.content_type());
         assert_eq!(None, response.body_string());
     }
-
 
     #[test]
     fn test_help() {
@@ -41,7 +40,6 @@ mod test {
         assert_eq!(Some("86588".to_string()), response.body_string());
     }
 
-
     #[test]
     fn test_vector_size() {
         let rocket = get_rocket_client();
@@ -52,15 +50,17 @@ mod test {
         assert_eq!(Some("100".to_string()), response.body_string());
     }
 
-
-     #[test]
+    #[test]
     fn test_404() {
         let rocket = get_rocket_client();
         let request = rocket.get("/a");
         let mut response = request.dispatch();
         assert_eq!(Status::NotFound, response.status());
         assert_eq!(Some(ContentType::JSON), response.content_type());
-        assert_eq!(Some(r###""Error 404, '/a' not found. See /help.""###.to_string()), response.body_string());
+        assert_eq!(
+            Some(r###""Error 404, '/a' not found. See /help.""###.to_string()),
+            response.body_string()
+        );
     }
 
     #[test]
@@ -70,12 +70,12 @@ mod test {
         let mut response = request.dispatch();
         assert_eq!(Status::Ok, response.status());
         assert_eq!(Some(ContentType::JSON), response.content_type());
-        let response_vec = serde_json::from_str::<Vec<f32>>(&response.body_string().unwrap()).unwrap();
+        let response_vec =
+            serde_json::from_str::<Vec<f32>>(&response.body_string().unwrap()).unwrap();
         assert_eq!(100, response_vec.len());
         let average = response_vec.iter().sum::<f32>() as f32 / response_vec.len() as f32;
         assert!(average != 0.0);
     }
-
 
     #[derive(Deserialize, Debug, PartialEq)]
     struct Word2VecResult(String, f32);
@@ -87,7 +87,8 @@ mod test {
         let mut response = request.dispatch();
         assert_eq!(Status::Ok, response.status());
         assert_eq!(Some(ContentType::JSON), response.content_type());
-        let response_vec = serde_json::from_str::<Vec<Word2VecResult>>(&response.body_string().unwrap()).unwrap();
+        let response_vec =
+            serde_json::from_str::<Vec<Word2VecResult>>(&response.body_string().unwrap()).unwrap();
         assert_eq!(10, response_vec.len());
     }
 
@@ -98,7 +99,8 @@ mod test {
         let mut response = request.dispatch();
         assert_eq!(Status::Ok, response.status());
         assert_eq!(Some(ContentType::JSON), response.content_type());
-        let response_vec = serde_json::from_str::<Vec<Word2VecResult>>(&response.body_string().unwrap()).unwrap();
+        let response_vec =
+            serde_json::from_str::<Vec<Word2VecResult>>(&response.body_string().unwrap()).unwrap();
         assert_eq!(3, response_vec.len());
 
         let expected_result = vec![
@@ -117,11 +119,11 @@ mod test {
         check_analogy_1(&mut response);
     }
 
-
     fn check_analogy_1(response: &mut rocket::Response) {
         assert_eq!(Status::Ok, response.status());
         assert_eq!(Some(ContentType::JSON), response.content_type());
-        let response_vec = serde_json::from_str::<Vec<Word2VecResult>>(&response.body_string().unwrap()).unwrap();
+        let response_vec =
+            serde_json::from_str::<Vec<Word2VecResult>>(&response.body_string().unwrap()).unwrap();
         assert_eq!(1, response_vec.len());
         assert_eq!("queen".to_string(), response_vec[0].0);
         assert!((0.24765503406524658 - response_vec[0].1).abs() < 0.00001);
@@ -134,7 +136,8 @@ mod test {
         let mut response = request.dispatch();
         assert_eq!(Status::Ok, response.status());
         assert_eq!(Some(ContentType::JSON), response.content_type());
-        let response_vec = serde_json::from_str::<Vec<Word2VecResult>>(&response.body_string().unwrap()).unwrap();
+        let response_vec =
+            serde_json::from_str::<Vec<Word2VecResult>>(&response.body_string().unwrap()).unwrap();
         assert_eq!(10, response_vec.len());
 
         let expected_result = vec![
@@ -156,8 +159,7 @@ mod test {
         }
     }
 
-
-     #[test]
+    #[test]
     fn test_analogy_nice_default() {
         let rocket = get_rocket_client();
         let request = rocket.get("/show/me/to/woman/what/king/is/to/man/");
@@ -165,20 +167,17 @@ mod test {
         check_analogy_1(&mut response);
     }
 
-
     #[test]
     #[should_panic]
     fn test_build_rocket_invalid_filename() {
         build_rocket("unknown");
     }
 
-
     #[test]
     #[should_panic]
     fn test_build_rocket_invalid_filecontents() {
         build_rocket("Cargo.toml");
     }
-
 
     fn get_rocket_client() -> Client {
         let filename = "tests/model/trained-small.bin";

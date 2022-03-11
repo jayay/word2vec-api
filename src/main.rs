@@ -2,8 +2,8 @@
 extern crate word2vec;
 
 extern crate word2vec_api_lib;
-use word2vec_api_lib::build_rocket;
 use std::env;
+use word2vec_api_lib::build_rocket;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
