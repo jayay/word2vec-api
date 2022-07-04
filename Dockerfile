@@ -1,4 +1,4 @@
-FROM rust:1.55.0-alpine3.14 as builder
+FROM rust:1.61.0-alpine3.14 as builder
 
 WORKDIR /usr/src/word2vec-api
 COPY Cargo.toml Cargo.toml
