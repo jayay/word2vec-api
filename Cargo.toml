@@ -10,17 +10,12 @@ path = "src/lib.rs"
 
 
 [dependencies]
-rocket = "^0.4.7"
+rocket = {version = "^0.5.0-rc.2", features=["json"]}
 
 [dependencies.word2vec]
 version = "0.3.2"
 default-features = false 
 features = ["simd"]
-
-[dependencies.rocket_contrib]
-version = "0.4.7"
-default-features = false
-features = ["json"]
 
 [patch.crates-io]
 word2vec = { git = 'https://github.com/jayay/word2vec', branch = 'simd' }
@@ -28,6 +23,7 @@ word2vec = { git = 'https://github.com/jayay/word2vec', branch = 'simd' }
 [dev-dependencies]
 serde_json = "^1.0.81"
 serde = { version = "^1.0", features = ["derive"] }
+tokio = "^1.19.2"
 
 [profile.release]
 opt-level = 2
