@@ -1456,7 +1456,7 @@ checksum = "c811ca4a8c853ef420abd8592ba53ddbbac90410fab6903b3e79972a631f7680"
 [[package]]
 name = "word2vec"
 version = "0.3.3"
-source = "git+https://github.com/jayay/word2vec?branch=simd#910caf13a65b35e681adfc08b0f817b8cd5f7bb6"
+source = "git+https://github.com/jayay/word2vec?branch=simd#f3f5c80fa3f73b802888af45b5ba8ca43fd40a24"
 dependencies = [
  "byteorder",
 ]
