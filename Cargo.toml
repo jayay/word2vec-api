@@ -10,7 +10,7 @@ path = "src/lib.rs"
 
 
 [dependencies]
-rocket = {version = "^0.5.0-rc.2", features=["json"]}
+rocket = {version = "^0.5.0-rc.3", features=["json"]}
 
 [dependencies.word2vec]
 version = "0.3.2"
